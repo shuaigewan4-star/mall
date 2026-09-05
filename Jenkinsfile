@@ -1,12 +1,36 @@
 pipeline {
-    agent any
+
+    agent {
+        label 'jenkins-agent'
+    }
+
 
     stages {
-        stage('Check Tools') {
+
+        stage('Agent Test') {
             steps {
-                sh 'java -version'
-                sh 'mvn -version'
+                sh '''
+                hostname
+                java -version
+                '''
             }
         }
+
+
+        stage('Maven Test') {
+
+            steps {
+
+                container('maven') {
+
+                    sh '''
+                    mvn -version
+                    '''
+
+                }
+
+            }
+        }
+
     }
 }
