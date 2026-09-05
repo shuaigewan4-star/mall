@@ -2,9 +2,10 @@ pipeline {
     agent any
 
     stages {
-        stage('Test') {
+        stage('Check Tools') {
             steps {
-                echo 'Hello Jenkins!'
+                sh 'java -version'
+                sh 'mvn -version'
             }
         }
     }
