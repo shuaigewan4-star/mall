@@ -2,7 +2,7 @@ FROM eclipse-temurin:17-jre
 
 WORKDIR /app
 
-COPY mall/mall-search/target/mall-search-1.0-SNAPSHOT.jar app.jar
+COPY mall-search/target/mall-search-1.0-SNAPSHOT.jar app.jar
 
 EXPOSE 8081
 
