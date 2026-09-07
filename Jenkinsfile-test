@@ -8,9 +8,7 @@ pipeline {
             steps {
                 container('maven') {
                     sh '''
-                    pwd
-                    ls -la
-                    find . -maxdepth 3 -type f | sort | grep "mall-helm"
+                     helm upgrade mall-admin ./mall-helm/mall-admin -n mall-prod
                     '''
                 }
             }
