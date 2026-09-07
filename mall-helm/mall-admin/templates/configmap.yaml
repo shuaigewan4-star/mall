@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: {{ include "mall-admin.fullname" . }}-config
+  labels:
+    {{- include "mall-admin.labels" . | nindent 4 }}
+
+data:
+
+  SPRING_PROFILES_ACTIVE: {{ .Values.env.SPRING_PROFILES_ACTIVE | quote }}
+
+  LOGSTASH_ENABLEINNERLOG: {{ .Values.env.LOGSTASH_ENABLEINNERLOG | quote }}

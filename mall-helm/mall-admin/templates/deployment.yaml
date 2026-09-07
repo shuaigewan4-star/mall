@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: {{ include "mall-admin.fullname" . }}
+
+  labels:
+    {{- include "mall-admin.labels" . | nindent 4 }}
+
+
+spec:
+
+  replicas: {{ .Values.replicaCount }}
+
+  selector:
+    matchLabels:
+      {{- include "mall-admin.selectorLabels" . | nindent 6 }}
+
+
+  template:
+
+    metadata:
+      labels:
+        {{- include "mall-admin.selectorLabels" . | nindent 8 }}
+
+
+    spec:
+
+      imagePullSecrets:
+        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
+
+
+      containers:
+
+        - name: mall-admin
+
+
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+
+          ports:
+
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+
+
+
+          envFrom:
+
+            - configMapRef:
+                name: {{ include "mall-admin.fullname" . }}-config
+
+          resources:
+
+            {{- toYaml .Values.resources | nindent 12 }}
+
+
+
+          startupProbe:
+
+            httpGet:
+
+              path: /actuator/health
+
+              port: http
+
+            periodSeconds: 5
+
+            timeoutSeconds: 2
+
+            failureThreshold: 12
+
+
+
+          readinessProbe:
+
+            httpGet:
+
+              path: /actuator/health/readiness
+
+              port: http
+
+            periodSeconds: 5
+
+            timeoutSeconds: 2
+
+            failureThreshold: 3
+
+            successThreshold: 1
+
+
+
+          livenessProbe:
+
+            httpGet:
+
+              path: /actuator/health/liveness
+
+              port: http
+
+            periodSeconds: 10
+
+            timeoutSeconds: 2
+
+            failureThreshold: 3
