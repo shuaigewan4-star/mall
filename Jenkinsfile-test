@@ -1,0 +1,19 @@
+pipeline {
+    agent {
+        label 'jenkins-agent'
+    }
+
+    stages {
+        stage('check workspace') {
+            steps {
+                container('maven') {
+                    sh '''
+                    pwd
+                    ls -la
+                    find . -maxdepth 3 -type f | sort | grep "mall-helm"
+                    '''
+                }
+            }
+        }
+    }
+}
