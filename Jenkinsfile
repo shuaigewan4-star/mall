@@ -4,6 +4,11 @@ pipeline {
         label 'jenkins-agent'
     }
 
+    environment {
+       REGISTRY = '192.168.0.198'
+        IMAGE_TAG = "${BUILD_NUMBER}"
+ 
+   }
 
     stages {
 
@@ -28,7 +33,7 @@ pipeline {
               container('maven') {
                 sh '''
                 docker build \
-                -t 192.168.0.198/mall/mall-admin:v1 \
+                -t ${REGISTRY}/mall/mall-admin:${IMAGE_TAG} \
                 -f docker/mall-admin/Dockerfile .
                 '''
             }
@@ -54,7 +59,7 @@ stage('Docker Push mall-admin') {
                 -u $HARBOR_USER \
                 --password-stdin
 
-                docker push 192.168.0.198/mall/mall-admin:v1
+                docker push ${REGISTRY}/mall/mall-admin:${IMAGE_TAG}
                 '''
 
             }
