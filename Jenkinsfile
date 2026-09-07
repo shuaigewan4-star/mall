@@ -6,161 +6,79 @@ pipeline {
 
     environment {
         REGISTRY = '192.168.0.198'
+        NAMESPACE = 'mall-prod'
         IMAGE_TAG = "${BUILD_NUMBER}"
     }
 
     stages {
 
-        stage('Build mall-admin') {
+        stage('Build & Push Images') {
+
             steps {
+
                 container('maven') {
-                    sh '''
-                    mvn clean package \
-                    -pl mall-admin \
-                    -am \
-                    -Ddocker.host=unix:///var/run/docker.sock \
-                    -Ddocker.skip=true
-                    '''
-                }
-            }
-        }
 
-        stage('Docker Build mall-admin') {
-            steps {
-                container('maven') {
-                    sh '''
-                    docker build \
-                    -t ${REGISTRY}/mall/mall-admin:${IMAGE_TAG} \
-                    -f docker/mall-admin/Dockerfile .
-                    '''
-                }
-            }
-        }
+                    script {
 
-        stage('Docker Push mall-admin') {
-            steps {
-                container('maven') {
-                    withCredentials([
-                        usernamePassword(
-                            credentialsId: 'harbor-credential',
-                            usernameVariable: 'HARBOR_USER',
-                            passwordVariable: 'HARBOR_PASS'
-                        )
-                    ]) {
-                        sh '''
-                        echo $HARBOR_PASS | docker login ${REGISTRY} \
-                        -u $HARBOR_USER \
-                        --password-stdin
+                        def services = [
+                            'mall-admin',
+                            'mall-portal',
+                            'mall-search'
+                        ]
 
-                        docker push ${REGISTRY}/mall/mall-admin:${IMAGE_TAG}
-                        '''
-                    }
-                }
-            }
-        }
+                        for (service in services) {
 
-        stage('Build mall-portal') {
-            steps {
-                container('maven') {
-                    sh '''
-                    mvn clean package \
-                    -pl mall-portal \
-                    -am \
-                    -Ddocker.host=unix:///var/run/docker.sock \
-                    -Ddocker.skip=true
-                    '''
-                }
-            }
-        }
+                            echo "===== Build ${service} ====="
 
-        stage('Docker Build mall-portal') {
-            steps {
-                container('maven') {
-                    sh '''
-                    docker build \
-                    -t ${REGISTRY}/mall/mall-portal:${IMAGE_TAG} \
-                    -f docker/mall-portal/Dockerfile .
-                    '''
-                }
-            }
-        }
+                            sh """
+                            mvn clean package \
+                            -pl ${service} \
+                            -am \
+                            -Ddocker.host=unix:///var/run/docker.sock \
+                            -Ddocker.skip=true
+                            """
 
-        stage('Docker Push mall-portal') {
-            steps {
-                container('maven') {
-                    withCredentials([
-                        usernamePassword(
-                            credentialsId: 'harbor-credential',
-                            usernameVariable: 'HARBOR_USER',
-                            passwordVariable: 'HARBOR_PASS'
-                        )
-                    ]) {
-                        sh '''
-                        echo $HARBOR_PASS | docker login ${REGISTRY} \
-                        -u $HARBOR_USER \
-                        --password-stdin
+                            echo "===== Docker Build ${service} ====="
 
-                        docker push ${REGISTRY}/mall/mall-portal:${IMAGE_TAG}
-                        '''
-                    }
-                }
-            }
-        }
+                            sh """
+                            docker build \
+                            -t ${REGISTRY}/mall/${service}:${IMAGE_TAG} \
+                            -f docker/${service}/Dockerfile .
+                            """
 
-        stage('Build mall-search') {
-            steps {
-                container('maven') {
-                    sh '''
-                    mvn clean package \
-                    -pl mall-search \
-                    -am \
-                    -Ddocker.host=unix:///var/run/docker.sock \
-                    -Ddocker.skip=true
-                    '''
-                }
-            }
-        }
+                            echo "===== Docker Push ${service} ====="
 
-        stage('Docker Build mall-search') {
-            steps {
-                container('maven') {
-                    sh '''
-                    docker build \
-                    -t ${REGISTRY}/mall/mall-search:${IMAGE_TAG} \
-                    -f docker/mall-search/Dockerfile .
-                    '''
-                }
-            }
-        }
+                            withCredentials([
+                                usernamePassword(
+                                    credentialsId: 'harbor-credential',
+                                    usernameVariable: 'HARBOR_USER',
+                                    passwordVariable: 'HARBOR_PASS'
+                                )
+                            ]) {
 
-        stage('Docker Push mall-search') {
-            steps {
-                container('maven') {
-                    withCredentials([
-                        usernamePassword(
-                            credentialsId: 'harbor-credential',
-                            usernameVariable: 'HARBOR_USER',
-                            passwordVariable: 'HARBOR_PASS'
-                        )
-                    ]) {
-                        sh '''
-                        echo $HARBOR_PASS | docker login ${REGISTRY} \
-                        -u $HARBOR_USER \
-                        --password-stdin
+                                sh """
+                                echo \$HARBOR_PASS | docker login ${REGISTRY} \
+                                -u \$HARBOR_USER \
+                                --password-stdin
 
-                        docker push ${REGISTRY}/mall/mall-search:${IMAGE_TAG}
-                        '''
+                                docker push ${REGISTRY}/mall/${service}:${IMAGE_TAG}
+                                """
+                            }
+                        }
                     }
                 }
             }
         }
 
         stage('Deploy mall-admin') {
+
             steps {
+
                 container('maven') {
+
                     sh '''
                     helm upgrade mall-admin ./mall-helm/mall-admin \
-                    -n mall-prod \
+                    -n ${NAMESPACE} \
                     --set image.tag=${IMAGE_TAG}
                     '''
                 }
@@ -168,11 +86,14 @@ pipeline {
         }
 
         stage('Rollout mall-admin') {
+
             steps {
+
                 container('maven') {
+
                     sh '''
                     kubectl rollout status deployment mall-admin \
-                    -n mall-prod
+                    -n ${NAMESPACE}
                     '''
                 }
             }
