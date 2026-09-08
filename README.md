@@ -1,6 +1,6 @@
 # Mall 云原生 DevOps 实践项目
 
-> 基于开源 Mall 电商系统，在单物理机 Kubernetes 环境中完成云原生改造与 DevOps 全流程实践。
+> 基于开源 Mall 电商系统，在个人搭建的单物理机 Kubernetes 集群环境中完成云原生改造与 DevOps 全流程实践。
 
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-1.35.x-blue)]()
 [![Docker](https://img.shields.io/badge/Docker-29.x-blue)]()
@@ -15,7 +15,7 @@
 
 # 一、项目简介
 
-本项目基于开源 Mall 电商业务系统，在单物理机环境中自主搭建 Kubernetes 集群，并在此基础上完成商城系统云原生部署与 DevOps 实践。
+本项目基于开源 Mall 电商业务系统，在单物理机环境中自主搭建 Kubernetes 集群，并在此基础上完成商城系统容器化改造、Kubernetes 部署以及 DevOps 自动化实践。
 
 项目从基础 Kubernetes 环境建设开始，覆盖容器运行环境、集群搭建、应用部署、服务访问、持久化存储、监控、日志以及 CI/CD 自动化交付等完整流程。
 
@@ -30,8 +30,8 @@
 * Linux 基础环境配置
 * Docker 容器运行环境
 * Kubernetes 集群初始化
-* 节点组件部署
-* 网络插件配置
+* Calico 网络插件配置
+* MetalLB LoadBalancer 配置
 * 集群状态验证
 
 实现从裸机环境到可运行 Kubernetes 平台的完整搭建流程。
@@ -54,7 +54,7 @@
 完成商城系统 Kubernetes 化部署，包括：
 
 * Namespace 资源隔离
-* Deployment 应用编排
+* Deployment 应用编排 
 * Service 服务发现
 * Ingress 外部访问
 * ConfigMap 配置管理
