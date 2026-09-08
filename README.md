@@ -9407,7 +9407,7 @@ Kubernetes 集群正常运行。
 
 截图：
 
-> Kubernetes Node 状态截图
+> ![Kubernetes Node](docs/images/k8s-node.png)
 
 ---
 
@@ -9441,7 +9441,7 @@ redis                        1/1     Running
 
 截图：
 
-> Kubernetes Pod运行截图
+> ![Mall Pods](docs/images/mall-pods.png)
 
 ---
 
@@ -9486,11 +9486,113 @@ Pod
 
 截图：
 
-> Ingress访问配置截图
+> ![Mall Ingress](docs/images/mall-ingress.png)
 
 ---
 
-# 17.4 Harbor 镜像仓库
+# 17.4 MetalLB LoadBalancer 实现
+
+由于本项目运行在单物理机 Kubernetes 环境中，没有云厂商提供的 LoadBalancer 服务。
+
+因此部署 MetalLB，为 Kubernetes 集群提供 LoadBalancer 能力，实现裸机环境下的服务暴露。
+
+MetalLB 工作流程：
+
+```text
+用户访问
+
+↓
+
+MetalLB 分配 External IP
+
+↓
+
+LoadBalancer Service
+
+↓
+
+Ingress Controller
+
+↓
+
+Service
+
+↓
+
+Pod
+```
+
+在 Kubernetes 云环境中，LoadBalancer 类型 Service 通常由云厂商自动提供。
+
+本项目运行于单物理机 Kubernetes 环境，因此通过 MetalLB 模拟云厂商 LoadBalancer 功能，为 Service 自动分配 External IP。
+
+查看 LoadBalancer 类型 Service：
+
+```bash
+kubectl get svc -n ingress-nginx
+kubectl get svc -n metallb-system
+```
+
+运行结果：
+
+```text
+NAME                         TYPE           EXTERNAL-IP
+
+ingress-nginx-controller     LoadBalancer   192.168.x.x
+
+NAME                      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+frr-k8s-webhook-service   ClusterIP   10.104.xxx.xx   <none>        443/TCP   12d
+metallb-webhook-service   ClusterIP   10.97.xxx.xx    <none>        443/TCP   12d
+```
+
+说明：
+
+MetalLB 已成功为 Kubernetes Service 分配外部访问地址。
+
+通过 MetalLB 实现：
+
+* 裸机 Kubernetes 环境支持 LoadBalancer 类型 Service
+* 自动分配 External IP
+* 为 Ingress Controller 提供外部访问入口
+* 完善 Kubernetes 服务访问链路
+
+最终访问流程：
+
+```text
+客户端
+
+↓
+
+MetalLB External IP
+
+↓
+
+LoadBalancer Service
+
+↓
+
+Ingress Controller
+
+↓
+
+Ingress Rule
+
+↓
+
+Service
+
+↓
+
+Pod
+```
+
+截图：
+
+> ![MetalLB LoadBalancer](docs/images/metallb.png)
+
+---
+ 
+# 17.5 Harbor 镜像仓库
 
 项目使用 Harbor 管理 Kubernetes 使用的镜像。
 
@@ -9521,11 +9623,11 @@ mall-search
 
 截图：
 
-> Harbor 镜像仓库截图
+> ![Harbor Images](docs/images/harbor-images.png)
 
 ---
 
-# 17.5 Jenkins CI/CD 流水线
+# 17.6 Jenkins CI/CD 流水线
 
 项目通过 Jenkins 实现自动化发布。
 
@@ -9567,11 +9669,11 @@ BUILD SUCCESS
 
 截图：
 
-> Jenkins Pipeline执行成功截图
+> ![Jenkins Pipeline](docs/images/jenkins-pipeline.png)
 
 ---
 
-# 17.6 Grafana 监控展示
+# 17.7 Grafana 监控展示
 
 项目部署 Prometheus + Grafana 监控体系。
 
@@ -9606,11 +9708,11 @@ Mall Overview Dashboard
 
 截图：
 
-> Grafana Dashboard截图
+> ![Grafana Dashboard](docs/images/grafana-dashboard.png)
 
 ---
 
-# 17.7 Prometheus Target状态
+# 17.8 Prometheus Target状态
 
 Prometheus 自动发现监控目标。
 
@@ -9639,11 +9741,106 @@ UP
 
 截图：
 
-> Prometheus Targets截图
+> ![Prometheus Targets](docs/images/prometheus-targets.png)
 
 ---
 
-# 17.8 ELK 日志系统展示
+# 17.9 AlertManager 告警系统
+
+项目基于 Prometheus + AlertManager 构建 Kubernetes 监控告警体系。
+
+Prometheus 负责指标采集与规则判断，AlertManager 负责告警管理、聚合以及通知处理。
+
+告警流程：
+
+```text id="a7m9qp"
+Prometheus
+
+↓
+
+Alert Rule
+
+↓
+
+AlertManager
+
+↓
+
+通知渠道
+```
+
+在监控体系中：
+
+* Prometheus 负责采集 Kubernetes、Node、Middleware 等指标
+* Alert Rule 根据指标阈值判断异常状态
+* AlertManager 接收 Prometheus 告警并进行统一管理
+
+查看 AlertManager 状态：
+
+```text id="j7v9qk"
+AlertManager Web UI
+```
+
+展示内容：
+
+```text id="q3r8fd"
+Alerts
+
+Status
+
+Silences
+```
+
+正常运行状态：
+
+```text id="v8n2kx"
+AlertManager Ready
+```
+
+项目中通过 AlertManager 实现：
+
+* Kubernetes 资源异常检测
+* Pod 状态异常告警
+* 节点资源使用率告警
+* 监控指标统一管理
+* 告警状态查看与处理
+
+告警闭环：
+
+```text id="m5k1sd"
+指标采集
+
+↓
+
+Prometheus
+
+↓
+
+规则匹配
+
+↓
+
+AlertManager
+
+↓
+
+告警通知
+
+↓
+
+问题处理
+```
+
+通过 Prometheus、Grafana、AlertManager 共同构建 Kubernetes 可观测体系。
+
+截图：
+
+![AlertManager Alert](docs/images/alertmanager.png)
+
+---
+
+
+# 17.10 ELK 日志系统展示
 
 项目部署：
 
@@ -9685,16 +9882,16 @@ Kibana 中可以查询：
 
 截图：
 
-> Kibana日志查询截图
+> ![Kibana Log](docs/images/kibana-log.png)
 
 ---
 
-# 17.9 Helm 部署管理
+# 17.11 Helm 部署管理
 
 查看 Helm Release：
 
 ```bash
-helm list -n mall-prod
+helm list -A
 ```
 
 结果：
@@ -9715,11 +9912,87 @@ deployed
 
 截图：
 
-> Helm Release截图
+> ![Helm Release](docs/images/helm-release.png)
 
 ---
 
-# 17.10 项目最终效果
+
+# 17.12 Mall 前台页面展示
+
+本项目最终运行的 Mall 电商系统通过 Kubernetes Ingress 对外提供访问能力。
+
+用户访问流程：
+
+```text
+用户浏览器
+
+↓
+
+Ingress
+
+↓
+
+Service
+
+↓
+
+Mall Web Pod
+```
+
+通过 Kubernetes 平台部署后，商城前台服务能够正常访问。
+
+展示内容包括：
+
+* 商城首页
+* 商品展示
+* 商品详情
+* 用户访问页面
+
+截图：
+
+![Mall Web](docs/images/mall-web.png)
+
+---
+
+# 17.13 Mall 管理后台展示
+
+Mall 管理后台服务同样运行于 Kubernetes 集群环境中。
+
+通过 Ingress 提供外部访问入口，实现后台管理系统访问。
+
+展示内容包括：
+
+* 管理后台首页
+* 商品管理
+* 订单管理
+* 用户管理
+
+访问流程：
+
+```text
+管理员浏览器
+
+↓
+
+Ingress
+
+↓
+
+Service
+
+↓
+
+Mall Admin Pod
+```
+
+截图：
+
+![Mall Admin Web](docs/images/mall-admin-web.png)
+
+---
+
+
+# 17.14 项目最终效果
 
 最终 Mall 云原生 DevOps 平台实现：
 
