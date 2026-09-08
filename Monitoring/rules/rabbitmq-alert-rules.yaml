@@ -1,0 +1,30 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: rabbitmq-alert-rules
+  namespace: mall-prod
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: rabbitmq.rules
+      rules:
+        - alert: RabbitMQDown
+          expr: up{job="rabbit"} == 0
+          for: 2m
+          labels:
+            namespace: mall-prod
+            severity: critical
+          annotations:
+            summary: "RabbitMQ is down"
+            description: "Prometheus cannot scrape RabbitMQ metrics."
+
+        - alert: RabbitMQQueueMessagesReadyHigh
+          expr: rabbitmq_queue_messages_ready > 100
+          for: 5m
+          labels:
+            namespace: mall-prod
+            severity: warning
+          annotations:
+            summary: "RabbitMQ messages are accumulating"
+            description: "RabbitMQ has more than 100 ready messages for 5 minutes."

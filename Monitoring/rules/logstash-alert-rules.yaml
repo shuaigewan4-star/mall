@@ -1,0 +1,37 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: logstash-alert-rules
+  namespace: mall-prod
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: logstash.rules
+      rules:
+        - alert: LogstashDown
+          expr: logstash_node_up == 0
+          for: 2m
+          labels:
+            namespace: mall-prod
+            severity: critical
+          annotations:
+            summary: "Logstash is down"
+            description: "Logstash exporter cannot connect to Logstash."
+
+        - alert: LogstashPipelineStalled
+          expr: |
+            (
+              rate(logstash_node_pipeline_events_in_total[5m]) > 0
+            )
+            and
+            (
+              rate(logstash_node_pipeline_events_out_total[5m]) == 0
+            )
+          for: 5m
+          labels:
+            namespace: mall-prod
+            severity: warning
+          annotations:
+            summary: "Logstash pipeline may be stalled"
+            description: "Logstash pipeline {{ $labels.pipeline }} has received events but produced no output for 5 minutes."

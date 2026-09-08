@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: mongodb-alert-rules
+  namespace: mall-prod
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: mongodb.rules
+      rules:
+        - alert: MongoDBDown
+          expr: mongodb_up == 0
+          for: 2m
+          labels:
+            namespace: mall-prod
+            severity: critical
+          annotations:
+            summary: "MongoDB is down"
+            description: "MongoDB exporter cannot connect to the MongoDB server."

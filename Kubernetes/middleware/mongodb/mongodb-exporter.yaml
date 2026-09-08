@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb-exporter
+  namespace: mall-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb-exporter
+  template:
+    metadata:
+      labels:
+        app: mongodb-exporter
+    spec:
+      containers:
+        - name: mongodb-exporter
+          image: percona/mongodb_exporter:0.53.0
+          args:
+            - "--mongodb.uri=mongodb://mongo:27017"
+          ports:
+            - name: metrics
+              containerPort: 9216

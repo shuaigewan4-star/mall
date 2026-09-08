@@ -9,3 +9,10 @@ target/
 .settings/
 .classpath
 .project
+
+# Kubernetes sensitive data
+k8s/mysql/mysql-secret.yaml
+k8s/monitoring/backup/
+
+# Environment files
+*.env

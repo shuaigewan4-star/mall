@@ -1,0 +1,30 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: mysql-alert-rules
+  namespace: mall-prod
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: mysql.rules
+      rules:
+        - alert: MySQLConnectionUsageHigh
+          expr: |
+            100 * ( mysql_global_status_threads_connected / mysql_global_variables_max_connections ) > 80
+          for: 5m
+          labels:
+            namespace: mall-prod
+            severity: warning
+          annotations:
+            summary: "MYSQL connection usage is high"
+            description: "MySQL connection usage has exceeded 80% for 5 minutes."
+        - alert: MySQLDown
+          expr: mysql_up == 0
+          for: 2m
+          labels:
+            namespace: mall-prod
+            severity: critical
+          annotations:
+            summary: "MySQL is down"
+            description: "MySQL exporter cannot connect to the MySQL server."

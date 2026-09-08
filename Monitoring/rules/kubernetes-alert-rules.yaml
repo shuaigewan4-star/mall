@@ -1,0 +1,109 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: kubernetes-alert-rules
+  namespace: mall-prod
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: kubernetes.rules
+      rules:
+
+        - alert: KubernetesPodRestarting
+          expr: |
+            sum by (namespace, pod) (
+              increase(kube_pod_container_status_restarts_total[10m])
+            ) > 3
+          for: 5m
+          labels:
+            namespace: mall-prod
+            severity: warning
+          annotations:
+            summary: "Kubernetes pod is restarting frequently"
+            description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has restarted more than 3 times in the last 10 minutes."
+
+        - alert: KubernetesPodMemoryUsageHigh
+          expr: |
+            100 *
+            sum by (pod) (
+              container_memory_working_set_bytes{
+                namespace="mall-prod",
+                container!="",
+                container!="POD"
+              }
+            )
+            /
+            sum by (pod) (
+              kube_pod_container_resource_limits{
+                namespace="mall-prod",
+                resource="memory"
+              }
+            )
+            > 80
+          for: 5m
+          labels:
+            namespace: mall-prod
+            severity: warning
+          annotations:
+            summary: "Kubernetes pod memory usage is high"
+            description: "Pod {{ $labels.pod }} memory usage has exceeded 80% of its configured memory limit for 5 minutes."
+        - alert: KubernetesNodeCPUUsageHigh
+          expr: |
+            100 - (
+              avg by (instance) (
+                rate(node_cpu_seconds_total{mode="idle"}[5m])
+              ) * 100
+            ) > 80
+          for: 5m
+          labels:
+            namespace: mall-prod
+            severity: warning
+          annotations:
+            summary: "Kubernetes node CPU usage is high"
+            description: "Node {{ $labels.instance }} CPU usage has exceeded 80% for 5 minutes."
+
+        - alert: KubernetesNodeMemoryUsageHigh
+          expr: |
+            100 * (
+              1 -
+              (
+                node_memory_MemAvailable_bytes
+                /
+                node_memory_MemTotal_bytes
+              )
+            ) > 80
+          for: 5m
+          labels:
+            namespace: mall-prod
+            severity: warning
+          annotations:
+            summary: "Kubernetes node memory usage is high"
+            description: "Node {{ $labels.instance }} memory usage has exceeded 80% for 5 minutes."
+
+        - alert: KubernetesNodeDiskUsageHigh
+          expr: |
+            100 *
+            (
+              1 -
+              (
+                node_filesystem_avail_bytes{
+                  job="node-exporter",
+                  fstype!~"tmpfs|overlay|squashfs",
+                  mountpoint="/"
+                }
+                /
+                node_filesystem_size_bytes{
+                  job="node-exporter",
+                  fstype!~"tmpfs|overlay|squashfs",
+                  mountpoint="/"
+                }
+              )
+            ) > 80
+          for: 5m
+          labels:
+            namespace: mall-prod
+            severity: warning
+          annotations:
+            summary: "Kubernetes node disk usage is high"
+            description: "Node {{ $labels.instance }} root filesystem usage has exceeded 80% for 5 minutes."

@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elasticsearch-exporter
+  namespace: mall-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elasticsearch-exporter
+  template:
+    metadata:
+      labels:
+        app: elasticsearch-exporter
+    spec:
+      containers:
+        - name: elasticsearch-exporter
+          image: quay.io/prometheuscommunity/elasticsearch-exporter:v1.7.0
+          args:
+            - "--es.uri=http://es:9200"
+          ports:
+            - name: metrics
+              containerPort: 9114

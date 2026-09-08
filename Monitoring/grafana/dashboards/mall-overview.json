@@ -1,0 +1,220 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "graphTooltip": 1,
+  "panels": [
+
+    {
+      "type": "stat",
+      "title": "Mall Pod Total",
+      "gridPos": {"x":0,"y":0,"w":6,"h":4},
+      "targets":[
+        {
+          "expr":"count(kube_pod_info{namespace=\"mall-prod\"})",
+          "refId":"A"
+        }
+      ]
+    },
+
+    {
+      "type":"stat",
+      "title":"Running Pods",
+      "gridPos":{"x":6,"y":0,"w":6,"h":4},
+      "targets":[
+        {
+          "expr":"count(kube_pod_status_phase{namespace=\"mall-prod\",phase=\"Running\"})",
+          "refId":"A"
+        }
+      ]
+    },
+
+
+    {
+      "type":"stat",
+      "title":"Pending Pods",
+      "gridPos":{"x":12,"y":0,"w":6,"h":4},
+      "targets":[
+        {
+          "expr":"count(kube_pod_status_phase{namespace=\"mall-prod\",phase=\"Pending\"})",
+          "refId":"A"
+        }
+      ]
+    },
+
+
+    {
+      "type":"stat",
+      "title":"Pod Restart 1h",
+      "gridPos":{"x":18,"y":0,"w":6,"h":4},
+      "targets":[
+        {
+          "expr":"sum(increase(kube_pod_container_status_restarts_total{namespace=\"mall-prod\"}[1h]))",
+          "refId":"A"
+        }
+      ]
+    },
+
+
+    {
+      "type":"stat",
+      "title":"Deployment Available",
+      "gridPos":{"x":0,"y":5,"w":6,"h":4},
+      "targets":[
+        {
+          "expr":"sum(kube_deployment_status_replicas_available{namespace=\"mall-prod\"})",
+          "refId":"A"
+        }
+      ]
+    },
+
+
+    {
+      "type":"stat",
+      "title":"StatefulSet Ready",
+      "gridPos":{"x":6,"y":5,"w":6,"h":4},
+      "targets":[
+        {
+          "expr":"sum(kube_statefulset_status_replicas_ready{namespace=\"mall-prod\"})",
+          "refId":"A"
+        }
+      ]
+    },
+
+
+    {
+      "type":"timeseries",
+      "title":"Node CPU Usage %",
+      "gridPos":{"x":12,"y":5,"w":12,"h":8},
+      "targets":[
+        {
+          "expr":"100-(avg(rate(node_cpu_seconds_total{mode=\"idle\"}[5m]))*100)",
+          "refId":"A"
+        }
+      ]
+    },
+
+
+    {
+      "type":"timeseries",
+      "title":"Node Memory Usage %",
+      "gridPos":{"x":0,"y":14,"w":12,"h":8},
+      "targets":[
+        {
+          "expr":"(1-node_memory_MemAvailable_bytes/node_memory_MemTotal_bytes)*100",
+          "refId":"A"
+        }
+      ]
+    },
+
+
+    {
+      "type":"timeseries",
+      "title":"Node Disk Usage %",
+      "gridPos":{"x":12,"y":14,"w":12,"h":8},
+      "targets":[
+        {
+          "expr":"100-(node_filesystem_avail_bytes{mountpoint=\"/\",fstype!=\"rootfs\"}/node_filesystem_size_bytes{mountpoint=\"/\",fstype!=\"rootfs\"}*100)",
+          "refId":"A"
+        }
+      ]
+    },
+
+
+    {
+      "type":"stat",
+      "title":"MySQL Exporter",
+      "gridPos":{"x":0,"y":23,"w":4,"h":4},
+      "targets":[
+        {
+          "expr":"up{job=~\".*mysql.*\"}",
+          "refId":"A"
+        }
+      ]
+    },
+
+
+    {
+      "type":"stat",
+      "title":"Redis Exporter",
+      "gridPos":{"x":4,"y":23,"w":4,"h":4},
+      "targets":[
+        {
+          "expr":"up{job=~\".*redis.*\"}",
+          "refId":"A"
+        }
+      ]
+    },
+
+
+    {
+      "type":"stat",
+      "title":"ES Exporter",
+      "gridPos":{"x":8,"y":23,"w":4,"h":4},
+      "targets":[
+        {
+          "expr":"up{job=~\".*elastic.*\"}",
+          "refId":"A"
+        }
+      ]
+    },
+
+
+    {
+      "type":"stat",
+      "title":"RabbitMQ Exporter",
+      "gridPos":{"x":12,"y":23,"w":4,"h":4},
+      "targets":[
+        {
+          "expr":"up{job=~\".*rabbit.*\"}",
+          "refId":"A"
+        }
+      ]
+    },
+
+
+    {
+      "type":"stat",
+      "title":"Logstash Exporter",
+      "gridPos":{"x":16,"y":23,"w":4,"h":4},
+      "targets":[
+        {
+          "expr":"logstash_node_up",
+          "refId":"A"
+        }
+      ]
+    },
+
+
+    {
+      "type":"stat",
+      "title":"Prometheus Targets UP",
+      "gridPos":{"x":20,"y":23,"w":4,"h":4},
+      "targets":[
+        {
+          "expr":"sum(up)",
+          "refId":"A"
+        }
+      ]
+    }
+
+
+  ],
+  "schemaVersion":39,
+  "tags":[
+    "mall",
+    "kubernetes"
+  ],
+  "templating":{
+    "list":[]
+  },
+  "time":{
+    "from":"now-6h",
+    "to":"now"
+  },
+  "timezone":"browser",
+  "title":"Mall Overview",
+  "uid":"mall-overview",
+  "version":2
+}

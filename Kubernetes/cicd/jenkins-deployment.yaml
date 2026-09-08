@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins
+  namespace: cicd
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: jenkins
+
+  template:
+    metadata:
+      labels:
+        app: jenkins
+
+    spec:
+      serviceAccountName: jenkins
+
+      containers:
+        - name: jenkins
+          image: jenkins/jenkins:lts-jdk21
+
+          ports:
+            - name: http
+              containerPort: 8080
+
+            - name: agent
+              containerPort: 50000
+
+          volumeMounts:
+            - name: jenkins-home
+              mountPath: /var/jenkins_home
+          env:
+            - name: HTTP_PROXY
+              value: "http://192.168.0.197:7897"
+
+            - name: HTTPS_PROXY
+              value: "http://192.168.0.197:7897"
+
+            - name: NO_PROXY
+              value: "localhost,127.0.0.1,::1,192.168.0.0/24,10.96.0.0/12,.svc,.svc.cluster.local"
+
+            - name: JAVA_OPTS
+              value: >-
+                -Dhttp.proxyHost=192.168.0.197
+                -Dhttp.proxyPort=7897
+                -Dhttps.proxyHost=192.168.0.197
+                -Dhttps.proxyPort=7897
+      volumes:
+        - name: jenkins-home
+          persistentVolumeClaim:
+            claimName: jenkins-home
+

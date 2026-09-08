@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mall-admin-config
+  namespace: mall-prod
+data:
+  SPRING_PROFILES_ACTIVE: "prod"
+  LOGSTASH_ENABLEINNERLOG: "true"

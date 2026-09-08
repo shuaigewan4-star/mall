@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: logstash-exporter
+  namespace: mall-prod
+  labels:
+    app: logstash-exporter
+spec:
+  type: ClusterIP
+  selector:
+    app: logstash-exporter
+  ports:
+    - name: metrics
+      port: 9198
+      targetPort: 9198

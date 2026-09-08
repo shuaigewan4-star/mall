@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch-exporter
+  namespace: mall-prod
+  labels:
+    app: elasticsearch-exporter
+spec:
+  type: ClusterIP
+  selector:
+    app: elasticsearch-exporter
+  ports:
+    - name: metrics
+      port: 9114
+      targetPort: 9114

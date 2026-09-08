@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mall-admin
+  namespace: mall-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mall-admin
+  template:
+    metadata:
+      labels:
+        app: mall-admin
+    spec:
+      imagePullSecrets:
+        - name: harbor-secret
+
+      containers:
+        - name: mall-admin
+          image: 192.168.0.198/mall/mall-admin:1.1
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+
+            - name: LOGSTASH_ENABLEINNERLOG
+              value: "true"
+
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 12
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+            successThreshold: 1
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mall-admin
+  namespace: mall-prod
+  labels:
+    app: mall-admin
+spec:
+  type: ClusterIP
+  selector:
+    app: mall-admin
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080

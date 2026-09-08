@@ -1,0 +1,52 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mall-ingress
+  namespace: mall-prod
+spec:
+  ingressClassName: nginx
+
+  rules:
+    - host: admin.test.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mall-admin-web
+                port:
+                  number: 80
+
+    - host: admin-api.test.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mall-admin
+                port:
+                  number: 8080
+
+    - host: mall.test.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mall-app-web
+                port:
+                  number: 80
+
+    - host: portal-api.test.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mall-portal
+                port:
+                  number: 8085

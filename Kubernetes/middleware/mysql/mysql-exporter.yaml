@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-exporter
+  namespace: mall-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-exporter
+  template:
+    metadata:
+      labels:
+        app: mysql-exporter
+    spec:
+      containers:
+        - name: mysqld-exporter
+          image: quay.io/prometheus/mysqld-exporter:v0.18.0
+
+          args:
+            - "--config.my-cnf=/.my.cnf"
+
+          ports:
+            - name: metrics
+              containerPort: 9104
+
+          volumeMounts:
+            - name: mysql-exporter-config
+              mountPath: .my.cnf
+              subPath: .my.cnf
+              readOnly: true
+      volumes:
+        - name: mysql-exporter-config
+          secret:
+            secretName: mysql-exporter-config
+            defaultMode: 0444

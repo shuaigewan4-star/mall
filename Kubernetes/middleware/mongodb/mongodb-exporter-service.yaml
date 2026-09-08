@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-exporter
+  namespace: mall-prod
+  labels:
+    app: mongodb-exporter
+spec:
+  type: ClusterIP
+  selector:
+    app: mongodb-exporter
+  ports:
+    - name: metrics
+      port: 9216
+      targetPort: 9216

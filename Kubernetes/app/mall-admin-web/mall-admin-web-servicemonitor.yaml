@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: mall-admin-web
+  namespace: mall-prod
+  labels:
+    release: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: mall-admin-web
+
+
+  namespaceSelector:
+    matchNames:
+      - mall-prod
+
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s
+

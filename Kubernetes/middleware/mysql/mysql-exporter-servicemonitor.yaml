@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: mysql-exporter
+  namespace: mall-prod
+  labels:
+    release: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: mysql-exporter
+
+  namespaceSelector:
+    matchNames:
+      - mall-prod
+
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s

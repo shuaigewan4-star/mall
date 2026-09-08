@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash-exporter
+  namespace: mall-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logstash-exporter
+  template:
+    metadata:
+      labels:
+        app: logstash-exporter
+    spec:
+      containers:
+        - name: logstash-exporter
+          image: leroymerlinbr/logstash-exporter:latest
+          args:
+            - "--logstash.endpoint=http://logstash:9600"
+            - "--listen.address=:9198"
+          ports:
+            - name: metrics
+              containerPort: 9198

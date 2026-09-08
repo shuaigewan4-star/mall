@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana
+  namespace: mall-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      containers:
+        - name: kibana
+          image: docker.elastic.co/kibana/kibana:7.17.18
+          ports:
+            - name: http
+              containerPort: 5601
+          env:
+            - name: ELASTICSEARCH_HOSTS
+              value: "http://es:9200"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana
+  namespace: mall-prod
+spec:
+  type: ClusterIP
+  selector:
+    app: kibana
+  ports:
+    - name: http
+      port: 5601
+      targetPort: 5601
